@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node dist/cli.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "tsc"
   },
   "engines": {
     "node": ">=20"
@@ -21,5 +22,15 @@
   },
   "dependencies": {
     "playwright": "^1.64.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/billmal071/chowdeck-cli.git"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "LICENSE",
+    "README.md"
+  ]
 }

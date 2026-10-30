@@ -45,7 +45,7 @@ A CLI plus an agent skill so a person's AI assistant can order food on Chowdeck 
    2. Record or screenshot the checkout flow (`npx playwright codegen https://chowdeck.com/store`, or screenshots of checkout and payment).
    3. Implement fee parsing in `quote()`, then `place()` and `status()` in `src/web.ts`. Verify against a real, small order the user approves.
 3. Support items with options (sizes, extras); currently they fail with a clear error.
-4. Add install steps for the skill.
+4. (Done) Install steps are in `docs/INSTALL.md`.
 
 ## Working in a cloud session (gotchas)
 

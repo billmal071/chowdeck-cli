@@ -41,6 +41,7 @@ The selectors target chowdeck.com's current markup (`src/web.ts`), so a site red
 
 ## Docs
 
+- [`docs/INSTALL.md`](docs/INSTALL.md): install the CLI and the agent skill, settings, web provider setup
 - [`docs/CONTEXT.md`](docs/CONTEXT.md): status, findings about Chowdeck, decisions and next steps (start here in a new session)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): code layout, provider interface, safety model, configuration
 - [`docs/outreach/`](docs/outreach/chowdeck-partner-email.md): draft email asking Chowdeck for API access
