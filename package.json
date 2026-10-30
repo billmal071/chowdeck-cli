@@ -2,6 +2,7 @@
   "name": "chowdeck-cli",
   "version": "0.1.0",
   "description": "Order food from the terminal, with an agent skill",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "chowdeck": "dist/cli.js"

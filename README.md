@@ -44,3 +44,7 @@ The selectors target chowdeck.com's current markup (`src/web.ts`), so a site red
 - [`docs/CONTEXT.md`](docs/CONTEXT.md): status, findings about Chowdeck, decisions and next steps (start here in a new session)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): code layout, provider interface, safety model, configuration
 - [`docs/outreach/`](docs/outreach/chowdeck-partner-email.md): draft email asking Chowdeck for API access
+
+## License
+
+[MIT](LICENSE)

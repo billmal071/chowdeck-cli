@@ -35,7 +35,7 @@ A CLI plus an agent skill so a person's AI assistant can order food on Chowdeck 
 - **Provider interface** (`src/provider.ts`) isolates Chowdeck access, so the CLI and skill stay unchanged if an API provider replaces the browser one.
 - **Never guess at payment.** `place()` throws on purpose. A wrong click on an unseen checkout page could charge real money.
 - **Repo:** https://github.com/billmal071/chowdeck-cli (public, `main`). Commits are authored as `billmal071 <5255082+billmal071@users.noreply.github.com>` with no AI trailers, at the user's request.
-- No license has been chosen yet.
+- **License: MIT**, copyright `billmal071` (2026).
 
 ## Next steps (in order)
 
@@ -45,7 +45,7 @@ A CLI plus an agent skill so a person's AI assistant can order food on Chowdeck 
    2. Record or screenshot the checkout flow (`npx playwright codegen https://chowdeck.com/store`, or screenshots of checkout and payment).
    3. Implement fee parsing in `quote()`, then `place()` and `status()` in `src/web.ts`. Verify against a real, small order the user approves.
 3. Support items with options (sizes, extras); currently they fail with a clear error.
-4. Choose a license, add install steps for the skill.
+4. Add install steps for the skill.
 
 ## Working in a cloud session (gotchas)
 
