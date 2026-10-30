@@ -38,3 +38,9 @@ node dist/cli.js quote      # builds the cart on chowdeck.com, prints subtotal a
 | Items that need options (sizes, extras) | Not supported; they fail with a clear error |
 
 The selectors target chowdeck.com's current markup (`src/web.ts`), so a site redesign can break them.
+
+## Docs
+
+- [`docs/CONTEXT.md`](docs/CONTEXT.md): status, findings about Chowdeck, decisions and next steps (start here in a new session)
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): code layout, provider interface, safety model, configuration
+- [`docs/outreach/`](docs/outreach/chowdeck-partner-email.md): draft email asking Chowdeck for API access
