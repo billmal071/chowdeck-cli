@@ -18,6 +18,15 @@ Always pass `--json` and parse the output. Prices are in naira (₦).
 7. **Place the order.** `chowdeck order --confirm --json`. Without `--confirm` it is a dry run, which is safe to use to preview.
 8. **Track.** `chowdeck status <order_id> --json`. `chowdeck history --json` lists past orders.
 
+## With the real Chowdeck site (`CHOWDECK_PROVIDER=web`)
+
+- Vendor ids are paths like `lekki-admiralty-way/restaurants/university-of-jollof-street47m586`. Use the id exactly as `search` returns it.
+- Item ids are slugs from `menu` (e.g. `water`, `egusi-soup`).
+- `quote` builds the cart on chowdeck.com and returns the **subtotal only**. Delivery and service fees are added at checkout, so tell the user the final total will be higher.
+- `quote` and `order` print the delivery address the site resolved (`delivering to: ...`). Show it to the user and confirm it is right before any order, because the site picks the closest match to the text in `config --address`.
+- Items that need options (sizes, extras) can't be added; tell the user to add those in the Chowdeck app.
+- Placing orders is **not implemented** for the web provider yet: `order --confirm` fails by design. Do not look for workarounds. Give the user the vendor, items and subtotal so they can finish in the Chowdeck app.
+
 ## Rules
 
 - Do not run `order --confirm` without the user's approval of that exact cart and total in this conversation.

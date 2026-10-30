@@ -47,3 +47,11 @@ export async function history(): Promise<Order[]> {
 
 /** Browser profile that holds the logged-in Chowdeck session. */
 export const profileDir = () => join(dir, "browser-profile");
+
+/** Which address the web provider last selected on chowdeck.com (avoids re-selecting it every run). */
+export interface WebState {
+  requested: string;
+  resolved: string;
+}
+export const loadWebState = () => read<WebState>("web-state.json", { requested: "", resolved: "" });
+export const saveWebState = (w: WebState) => write("web-state.json", w);

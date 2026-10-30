@@ -22,8 +22,19 @@ node dist/cli.js order --confirm
 
 ```bash
 npx playwright install chromium     # or set CHOWDECK_BROWSER_PATH to system Chrome
-CHOWDECK_PROVIDER=web node dist/cli.js login    # opens a window; log in with phone + OTP yourself
-CHOWDECK_PROVIDER=web node dist/cli.js whoami
+export CHOWDECK_PROVIDER=web
+node dist/cli.js config --address "Admiralty Way, Lekki"
+node dist/cli.js search jollof
+node dist/cli.js menu lekki-admiralty-way/restaurants/university-of-jollof-street47m586
+node dist/cli.js cart add lekki-admiralty-way/restaurants/university-of-jollof-street47m586 water 2
+node dist/cli.js quote      # builds the cart on chowdeck.com, prints subtotal and resolved address
 ```
 
-Login is done by you in a visible browser: Chowdeck uses an OTP and a Cloudflare challenge, which this tool does not try to bypass. `login` and `whoami` work; search, menu, quote, order and status are not implemented yet and fail with a clear error.
+| Feature | Status |
+|---|---|
+| Delivery address selection, search, menus, cart, subtotal quote | Working, tested live, no login needed |
+| `login` / `whoami` (you log in yourself in a visible browser; phone + OTP + Cloudflare challenge, which this tool does not try to bypass) | Working |
+| Delivery and service fees, `order --confirm`, `status` | Not implemented: needs a logged-in session to build and verify, and the tool will not guess where a payment button is |
+| Items that need options (sizes, extras) | Not supported; they fail with a clear error |
+
+The selectors target chowdeck.com's current markup (`src/web.ts`), so a site redesign can break them.

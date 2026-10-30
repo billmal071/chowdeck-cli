@@ -34,6 +34,10 @@ export interface Quote {
   service_fee: number;
   total: number;
   eta_min: number;
+  /** Delivery address as the provider resolved it, so the user can verify it. */
+  address?: string;
+  /** Caveats about the numbers, e.g. fees that are only known at checkout. */
+  note?: string;
 }
 
 export interface Order {
@@ -51,4 +55,5 @@ export interface Provider {
   quote(cart: Cart, address: string): Promise<Quote>;
   place(cart: Cart, address: string): Promise<Order>;
   status(orderId: string): Promise<Order>;
+  close?(): Promise<void>;
 }

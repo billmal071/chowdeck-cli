@@ -25,7 +25,9 @@ Orders are a dry run unless --confirm is passed.
 Set CHOWDECK_PROVIDER=web to use chowdeck.com (default: mock, no real orders).`;
 
 const useWeb = process.env.CHOWDECK_PROVIDER === "web";
-const provider: Provider = useWeb ? new WebProvider() : new MockProvider();
+const provider: Provider = useWeb
+  ? new WebProvider(async () => (await store.loadSettings()).address)
+  : new MockProvider();
 
 async function main(argv: string[]): Promise<void> {
   const { values, positionals } = parseArgs({
@@ -84,7 +86,12 @@ async function main(argv: string[]): Promise<void> {
     case "quote": {
       const { cart, address } = await loadReady();
       const q = await provider.quote(cart, address);
-      return out(q, `subtotal ₦${q.subtotal} + delivery ₦${q.delivery_fee} + service ₦${q.service_fee} = ₦${q.total} (eta ${q.eta_min}min)`);
+      return out(
+        q,
+        `subtotal ₦${q.subtotal} + delivery ₦${q.delivery_fee} + service ₦${q.service_fee} = ₦${q.total} (eta ${q.eta_min}min)` +
+          (q.address ? `\ndelivering to: ${q.address}` : "") +
+          (q.note ? `\nnote: ${q.note}` : ""),
+      );
     }
 
     case "order": {
@@ -95,8 +102,10 @@ async function main(argv: string[]): Promise<void> {
       }
       if (!values.confirm) {
         return out(
-          { dry_run: true, quote: q, address },
-          `DRY RUN: would order for ₦${q.total} to "${address}". Re-run with --confirm to place it.`,
+          { dry_run: true, quote: q, address: q.address ?? address },
+          `DRY RUN: would order for ₦${q.total} to "${q.address ?? address}".` +
+            (q.note ? `\nnote: ${q.note}` : "") +
+            "\nRe-run with --confirm to place it.",
         );
       }
       const o = await provider.place(cart, address);
@@ -160,7 +169,9 @@ async function loadReady() {
   return { cart, ...s };
 }
 
-main(process.argv.slice(2)).catch((e: unknown) => {
-  console.error("error:", e instanceof Error ? e.message : e);
-  process.exit(1);
-});
+main(process.argv.slice(2))
+  .catch((e: unknown) => {
+    console.error("error:", e instanceof Error ? e.message : e);
+    process.exitCode = 1;
+  })
+  .finally(() => provider.close?.());
