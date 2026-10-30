@@ -9,7 +9,7 @@ export interface Settings {
   max_spend: number; // naira per order
 }
 
-const dir = process.env.CHOWDECK_HOME ?? join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "chowdeck");
+export const dir = process.env.CHOWDECK_HOME ?? join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "chowdeck");
 
 async function read<T>(name: string, fallback: T): Promise<T> {
   try {
@@ -44,3 +44,6 @@ export async function history(): Promise<Order[]> {
     throw e;
   }
 }
+
+/** Browser profile that holds the logged-in Chowdeck session. */
+export const profileDir = () => join(dir, "browser-profile");

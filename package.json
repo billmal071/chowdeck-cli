@@ -3,15 +3,22 @@
   "version": "0.1.0",
   "description": "Order food from the terminal, with an agent skill",
   "type": "module",
-  "bin": { "chowdeck": "dist/cli.js" },
+  "bin": {
+    "chowdeck": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node dist/cli.js",
     "typecheck": "tsc --noEmit"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "playwright": "^1.64.1"
   }
 }

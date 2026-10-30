@@ -2,12 +2,14 @@
 // chowdeck: browse and order food from the command line. Add --json to any command.
 import { parseArgs } from "node:util";
 import { MockProvider } from "./mock.js";
+import { WebProvider, isLoggedIn, login } from "./web.js";
 import type { Cart, Provider } from "./provider.js";
 import * as store from "./store.js";
 
 const usage = `chowdeck - order food from the terminal
 
 Usage:
+  chowdeck login | whoami          (web provider only)
   chowdeck config [--address ADDR] [--max-spend NAIRA]
   chowdeck search [QUERY]
   chowdeck menu VENDOR_ID
@@ -19,9 +21,11 @@ Usage:
   chowdeck history
 
 Add --json to any command for machine-readable output.
-Orders are a dry run unless --confirm is passed.`;
+Orders are a dry run unless --confirm is passed.
+Set CHOWDECK_PROVIDER=web to use chowdeck.com (default: mock, no real orders).`;
 
-const provider: Provider = new MockProvider(); // swap for the real provider later
+const useWeb = process.env.CHOWDECK_PROVIDER === "web";
+const provider: Provider = useWeb ? new WebProvider() : new MockProvider();
 
 async function main(argv: string[]): Promise<void> {
   const { values, positionals } = parseArgs({
@@ -42,6 +46,14 @@ async function main(argv: string[]): Promise<void> {
     console.log(values.json ? JSON.stringify(data, null, 2) : human);
 
   switch (cmd) {
+    case "login":
+    case "whoami": {
+      if (!useWeb) throw new Error("only available with CHOWDECK_PROVIDER=web");
+      if (cmd === "login") await login();
+      const ok = await isLoggedIn();
+      return out({ logged_in: ok }, ok ? "logged in" : "not logged in");
+    }
+
     case "config": {
       const s = await store.loadSettings();
       if (values.address) s.address = values.address;

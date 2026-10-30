@@ -15,3 +15,15 @@ node dist/cli.js order --confirm
 - `src/provider.ts`: the `Provider` interface. `src/mock.ts` is the mock; add the real Chowdeck integration (e.g. Playwright browser automation) and swap it in `src/cli.ts`.
 - `src/store.ts`: cart, settings (address, max spend) and order audit log, kept in `$CHOWDECK_HOME` or `~/.config/chowdeck`.
 - `skills/chowdeck/SKILL.md`: the skill that teaches agents the workflow and safety rules.
+
+## Web provider (in progress)
+
+`CHOWDECK_PROVIDER=web` drives chowdeck.com/store in a real browser using a persistent profile in `$CHOWDECK_HOME/browser-profile`.
+
+```bash
+npx playwright install chromium     # or set CHOWDECK_BROWSER_PATH to system Chrome
+CHOWDECK_PROVIDER=web node dist/cli.js login    # opens a window; log in with phone + OTP yourself
+CHOWDECK_PROVIDER=web node dist/cli.js whoami
+```
+
+Login is done by you in a visible browser: Chowdeck uses an OTP and a Cloudflare challenge, which this tool does not try to bypass. `login` and `whoami` work; search, menu, quote, order and status are not implemented yet and fail with a clear error.
