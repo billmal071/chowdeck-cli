@@ -12,7 +12,7 @@ Always pass `--json` and parse the output. Prices are in naira (₦).
 1. **Check setup.** Run `chowdeck config --json`. If `address` is empty, ask the user for their delivery address and run `chowdeck config --address "<address>"`.
 2. **Find a vendor.** `chowdeck search "<query>" --json`. Skip vendors with `open: false`.
 3. **Read the menu.** `chowdeck menu <vendor_id> --json`. Only use items with `available: true`.
-4. **Build the cart.** `chowdeck cart add <vendor_id> <item_id> [qty]`. A cart holds one vendor only; use `chowdeck cart clear` to start over.
+4. **Check options, then build the cart.** Any item can have options (sizes, sides, drinks, extras); a `+` after the price in `menu` means it definitely does. Run `chowdeck options <vendor_id> <item_id> --json` to list the groups: each has `required`, `min`, `max` and priced `choices`. Ask the user to choose for every required group (never pick for them), then `chowdeck cart add <vendor_id> <item_id> [qty] --option "Group=Choice" ...` (repeat `--option`). A cart holds one vendor only; use `chowdeck cart clear` to start over. `cart add` rejects missing required choices, unknown choices and too many picks, and prints the per-unit price including options.
 5. **Quote.** `chowdeck quote --json`, which returns subtotal, fees, total and ETA.
 6. **Get explicit approval.** Show the user the items, total, address and ETA, and wait for a clear "yes". Never skip this step, and never infer approval from the original request.
 7. **Place the order.** `chowdeck order --confirm --json`. Without `--confirm` it is a dry run, which is safe to use to preview.
@@ -24,7 +24,8 @@ Always pass `--json` and parse the output. Prices are in naira (₦).
 - Item ids are slugs from `menu` (e.g. `water`, `egusi-soup`).
 - `quote` builds the cart on chowdeck.com and returns the **subtotal only**. Delivery and service fees are added at checkout, so tell the user the final total will be higher.
 - `quote` and `order` print the delivery address the site resolved (`delivering to: ...`). Show it to the user and confirm it is right before any order, because the site picks the closest match to the text in `config --address`.
-- Items that need options (sizes, extras) can't be added; tell the user to add those in the Chowdeck app.
+- Option names are matched ignoring case. If a choice name exists in several groups, write it as `Group=Choice`.
+- Some vendors add packaging (e.g. a ₦400 take-away pack) automatically. `quote` reports it as "includes ₦X packaging"; mention it to the user.
 - Placing orders is **not implemented** for the web provider yet: `order --confirm` fails by design. Do not look for workarounds. Give the user the vendor, items and subtotal so they can finish in the Chowdeck app.
 
 ## Rules

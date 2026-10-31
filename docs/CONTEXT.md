@@ -15,6 +15,7 @@ A CLI plus an agent skill so a person's AI assistant can order food on Chowdeck 
 | Agent skill (`skills/chowdeck/SKILL.md`) | Done |
 | Mock provider (canned vendors, never places real orders) | Done, the default |
 | Web provider: address, search, menus, cart, subtotal quote | Done, tested live, no login needed |
+| Web provider: items with options (`options` command, `--option`), automatic packaging | Done, tested live |
 | Web provider: login/whoami | Done (user logs in by hand in a visible browser) |
 | Web provider: delivery/service fees, `place`, `status` | **Not built** (needs a logged-in session) |
 | Official API access from Chowdeck | **Not obtained**; partner email drafted, see `docs/outreach/` |
@@ -27,6 +28,9 @@ A CLI plus an agent skill so a person's AI assistant can order food on Chowdeck 
 - **Cart is server-side**, tied to the browser session, so the persistent profile keeps it.
 - **WhatsApp ordering** exists (`https://wa.me/2349165045801`, linked from `chowdeck.com/ai`). There is no documented API. Programmatic use would mean automating a WhatsApp account (unofficial libraries break WhatsApp's terms and risk bans) or misusing the Business Cloud API. Replies are free text. **Rejected.**
 - **Paystack Index** ([help page](https://index.paystack.com/legal/support/food-orders)) is an AI agent that links to a Chowdeck account (phone + OTP) and orders on the user's behalf, paid from Chowdeck or Zap balance. It shows Chowdeck supports partner agents, but third-party access is not documented. Only that one page was read.
+- **Item options** (checked 2026-10-31): clicking Add on a plain item posts to the cart straight away. Items with options open a dialog (`[role=dialog]`) with groups: a rule line ("Select 1" + "Required", or "Select up to N"), priced choices ("+ ₦3,000.00"), a quantity stepper and an "Add to cart ₦total" button whose total is used to verify the price before anything is added. A "From ₦X" price on the menu means options exist, but items without "From" can have required groups too (e.g. Chicken Republic combos), so the dialog is the only reliable test. The groups render a moment after the dialog opens. A struck-through original price precedes the discounted one, so the *last* ₦ amount is the real price.
+- **Automatic packaging:** some items (soups, combos) add a "Take Away Pack" (₦400) to the cart on their own. It is part of the subtotal, so quotes check "items + packaging = subtotal" instead of just items.
+- **The address button's label changes** ("DELIVERY TO", "HOTEL", ...) depending on the address type, so it is found as the first `header button[aria-haspopup="dialog"]` and its address is the second line of text. Matching on "Delivery to" broke after selecting a hotel.
 - Approaches considered and rejected: reverse-engineering the private API, WhatsApp bridge. Chosen: browser automation now, official API if Chowdeck grants it.
 
 ## Decisions
@@ -44,10 +48,11 @@ A CLI plus an agent skill so a person's AI assistant can order food on Chowdeck 
    1. User runs `CHOWDECK_PROVIDER=web node dist/cli.js login` on their own machine.
    2. Record or screenshot the checkout flow (`npx playwright codegen https://chowdeck.com/store`, or screenshots of checkout and payment).
    3. Implement fee parsing in `quote()`, then `place()` and `status()` in `src/web.ts`. Verify against a real, small order the user approves.
-3. Support items with options (sizes, extras); currently they fail with a clear error.
-4. (Done) Install steps are in `docs/INSTALL.md`.
+3. (Done) Items with options. 4. (Done) Install steps are in `docs/INSTALL.md`.
 
 ## Working in a cloud session (gotchas)
+
+- Most vendors are closed at night in Lagos (WAT = UTC+1), so live tests of menus and options are best done in the afternoon or evening there. `CHOWDECK_DEBUG=1` saves a screenshot and the page text to `$CHOWDECK_HOME/debug/` when address selection fails, which is how selector breakages are diagnosed fastest.
 
 - Playwright from npm expects a newer browser build than the one pre-installed in the cloud container. Run with `CHOWDECK_BROWSER_PATH=/opt/pw-browsers/chromium`.
 - Cloud sessions can't do the OTP login, so only logged-out features can be tested there.

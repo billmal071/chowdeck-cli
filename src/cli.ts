@@ -3,7 +3,8 @@
 import { parseArgs } from "node:util";
 import { MockProvider } from "./mock.js";
 import { WebProvider, isLoggedIn, login } from "./web.js";
-import type { Cart, Provider } from "./provider.js";
+import { resolveOptions } from "./options.js";
+import type { Cart, OptionGroup, Provider } from "./provider.js";
 import * as store from "./store.js";
 
 const usage = `chowdeck - order food from the terminal
@@ -13,7 +14,8 @@ Usage:
   chowdeck config [--address ADDR] [--max-spend NAIRA]
   chowdeck search [QUERY]
   chowdeck menu VENDOR_ID
-  chowdeck cart add VENDOR_ID ITEM_ID [QTY]
+  chowdeck options VENDOR_ID ITEM_ID
+  chowdeck cart add VENDOR_ID ITEM_ID [QTY] [--option "Group=Choice"]...
   chowdeck cart show | clear
   chowdeck quote
   chowdeck order [--confirm]
@@ -38,6 +40,7 @@ async function main(argv: string[]): Promise<void> {
       confirm: { type: "boolean" },
       address: { type: "string" },
       "max-spend": { type: "string" },
+      option: { type: "string", multiple: true },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -76,8 +79,17 @@ async function main(argv: string[]): Promise<void> {
     case "menu": {
       if (!pos[0]) throw new Error("usage: chowdeck menu VENDOR_ID");
       const { vendor, items } = await provider.menu(pos[0]);
-      const lines = items.map((i) => `  ${i.id}  ${i.name}  ₦${i.price} available=${i.available}`);
+      const lines = items.map(
+        (i) => `  ${i.id}  ${i.name}  ₦${i.price}${i.has_options ? "+" : ""} available=${i.available}`,
+      );
       return out({ vendor, items }, [`${vendor.name} (open=${vendor.open})`, ...lines].join("\n"));
+    }
+
+    case "options": {
+      if (!pos[0] || !pos[1]) throw new Error("usage: chowdeck options VENDOR_ID ITEM_ID");
+      if (!provider.itemOptions) throw new Error("this provider does not support item options");
+      const groups = await provider.itemOptions(pos[0], pos[1]);
+      return out(groups, groups.length ? formatGroups(groups) : "no options: this item can be added as it is");
     }
 
     case "cart":
@@ -89,6 +101,7 @@ async function main(argv: string[]): Promise<void> {
       return out(
         q,
         `subtotal ₦${q.subtotal} + delivery ₦${q.delivery_fee} + service ₦${q.service_fee} = ₦${q.total} (eta ${q.eta_min}min)` +
+          (q.packaging ? `\nincludes ₦${q.packaging} packaging added by the vendor` : "") +
           (q.address ? `\ndelivering to: ${q.address}` : "") +
           (q.note ? `\nnote: ${q.note}` : ""),
       );
@@ -144,13 +157,22 @@ async function main(argv: string[]): Promise<void> {
         const item = items.find((i) => i.id === itemId);
         if (!item) throw new Error(`item "${itemId}" not found at vendor "${vendorId}"`);
         if (!item.available) throw new Error(`"${item.name}" is unavailable`);
+        const groups = provider.itemOptions ? await provider.itemOptions(vendorId, itemId) : [];
+        const picked = resolveOptions(item.name, groups, values.option ?? []);
         cart.vendor_id = vendorId;
-        cart.lines.push({ item_id: item.id, name: item.name, qty, unit_price: item.price });
+        cart.lines.push({
+          item_id: item.id,
+          name: item.name,
+          qty,
+          unit_price: item.price + picked.delta,
+          ...(picked.canonical.length ? { options: picked.canonical } : {}),
+        });
         await store.saveCart(cart);
-        return print(cart, `added ${qty}x ${item.name}`);
+        const extra = picked.canonical.length ? ` (${picked.canonical.join(", ")})` : "";
+        return print(cart, `added ${qty}x ${item.name}${extra} at ₦${item.price + picked.delta} each`);
       }
       case "show":
-        return print(cart, [`vendor: ${cart.vendor_id}`, ...cart.lines.map((l) => `  ${l.qty}x ${l.name} ₦${l.unit_price}`)].join("\n"));
+        return print(cart, [`vendor: ${cart.vendor_id}`, ...cart.lines.map((l) => `  ${l.qty}x ${l.name} ₦${l.unit_price}${l.options?.length ? ` [${l.options.join(", ")}]` : ""}`)].join("\n"));
       case "clear": {
         const empty: Cart = { vendor_id: "", lines: [] };
         await store.saveCart(empty);
@@ -160,6 +182,16 @@ async function main(argv: string[]): Promise<void> {
         throw new Error("usage: chowdeck cart add|show|clear");
     }
   }
+}
+
+function formatGroups(groups: OptionGroup[]): string {
+  return groups
+    .map((g) => {
+      const rule = g.required ? `required, pick ${g.max === 1 ? "1" : `${g.min} to ${g.max}`}` : `optional, up to ${g.max}`;
+      const choices = g.choices.map((c) => `  - ${c.name}${c.price ? ` (+₦${c.price})` : ""}`);
+      return [`${g.name} (${rule})`, ...choices].join("\n");
+    })
+    .join("\n");
 }
 
 async function loadReady() {

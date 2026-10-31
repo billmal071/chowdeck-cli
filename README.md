@@ -4,6 +4,7 @@ A TypeScript CLI (and agent skill) for ordering food. It currently runs against 
 
 ```bash
 npm install && npm run build
+npm test                    # unit tests for the option rules
 node dist/cli.js config --address "12 Admiralty Way, Lekki"
 node dist/cli.js search burger --json
 node dist/cli.js cart add v2 m4 2
@@ -27,15 +28,17 @@ node dist/cli.js config --address "Admiralty Way, Lekki"
 node dist/cli.js search jollof
 node dist/cli.js menu lekki-admiralty-way/restaurants/university-of-jollof-street47m586
 node dist/cli.js cart add lekki-admiralty-way/restaurants/university-of-jollof-street47m586 water 2
+node dist/cli.js options VENDOR_ID ITEM_ID        # sizes, drinks, extras for an item
+node dist/cli.js cart add VENDOR_ID ITEM_ID 1 --option "Size=Large" --option "Extras=Cheese"
 node dist/cli.js quote      # builds the cart on chowdeck.com, prints subtotal and resolved address
 ```
 
 | Feature | Status |
 |---|---|
 | Delivery address selection, search, menus, cart, subtotal quote | Working, tested live, no login needed |
+| Items with options (required choices, extras, quantity) and automatic packaging charges | Working, tested live |
 | `login` / `whoami` (you log in yourself in a visible browser; phone + OTP + Cloudflare challenge, which this tool does not try to bypass) | Working |
 | Delivery and service fees, `order --confirm`, `status` | Not implemented: needs a logged-in session to build and verify, and the tool will not guess where a payment button is |
-| Items that need options (sizes, extras) | Not supported; they fail with a clear error |
 
 The selectors target chowdeck.com's current markup (`src/web.ts`), so a site redesign can break them.
 

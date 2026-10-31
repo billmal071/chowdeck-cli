@@ -11,7 +11,8 @@
     "build": "tsc",
     "dev": "tsc && node dist/cli.js",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsc"
+    "prepare": "tsc",
+    "test": "tsc && node --test \"dist/**/*.test.js\""
   },
   "engines": {
     "node": ">=20"
@@ -29,6 +30,7 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.test.js",
     "skills",
     "LICENSE",
     "README.md"

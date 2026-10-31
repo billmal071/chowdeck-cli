@@ -1,4 +1,4 @@
-import type { Cart, MenuItem, Order, Provider, Quote, Vendor } from "./provider.js";
+import type { Cart, MenuItem, Order, OptionGroup, Provider, Quote, Vendor } from "./provider.js";
 
 const vendors: Vendor[] = [
   { id: "v1", name: "Mama Put Kitchen", cuisine: "Nigerian", open: true, eta_min: 35 },
@@ -13,10 +13,35 @@ const menus: Record<string, MenuItem[]> = {
     { id: "m3", name: "Moin moin", price: 1200, available: false },
   ],
   v2: [
-    { id: "m4", name: "Classic burger", price: 4000, available: true },
+    { id: "m4", name: "Classic burger", price: 4000, available: true, has_options: true },
     { id: "m5", name: "Fries", price: 1500, available: true },
   ],
   v3: [{ id: "m6", name: "Beef suya", price: 3000, available: true }],
+};
+
+const mockOptions: Record<string, OptionGroup[]> = {
+  m4: [
+    {
+      name: "Size",
+      required: true,
+      min: 1,
+      max: 1,
+      choices: [
+        { name: "Regular", price: 0 },
+        { name: "Large", price: 1000 },
+      ],
+    },
+    {
+      name: "Extras",
+      required: false,
+      min: 0,
+      max: 2,
+      choices: [
+        { name: "Cheese", price: 500 },
+        { name: "Bacon", price: 800 },
+      ],
+    },
+  ],
 };
 
 /** In-memory provider with canned vendors. It never places real orders. */
@@ -30,6 +55,10 @@ export class MockProvider implements Provider {
     const vendor = vendors.find((v) => v.id === vendorId);
     if (!vendor) throw new Error(`vendor "${vendorId}" not found`);
     return { vendor, items: menus[vendorId] ?? [] };
+  }
+
+  async itemOptions(_vendorId: string, itemId: string): Promise<OptionGroup[]> {
+    return mockOptions[itemId] ?? [];
   }
 
   async quote(cart: Cart, _address: string): Promise<Quote> {
